@@ -1,0 +1,16 @@
+{
+  "name": "combat_sports_web_scraper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "cheerio": "^1.0.0-rc.12",
+    "express": "^4.19.2"
+  }
+}
