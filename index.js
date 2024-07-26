@@ -14,11 +14,14 @@ axios(URL)
 
         // AnchorLink works
 
-        $('.event__col.Table__TD', html).each(function () {
-            const fight_name = $(this).text();
+        $('.Table__TR.Table__TR--sm.Table__even', html).each(function () {
+            const fight_name = $(this).children('.event__col.Table__TD').text();
             const url = $(this).find('a').attr('href');
+            const date = $(this).find('span').text();
+
             fights.push({
                 title: fight_name,
+                date: date,
                 url: url
             })
         });
