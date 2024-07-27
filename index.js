@@ -6,33 +6,83 @@ const app = express();
 const PORT = 8000;
 const URL = 'https://www.espn.com/mma/schedule';
 
+const fights = [];
+
 axios(URL)
     .then(response => {
         const html = response.data;
         const $ = cheerio.load(html);
-        const fights = [];
-
-        // AnchorLink workslol
 
         $('.Table__TR.Table__TR--sm.Table__even', html).each(function () {
-            const fight_name = $(this).children('.event__col.Table__TD').text();
+            const fightName = $(this).children('.event__col.Table__TD').text();
             const url = $(this).find('a').attr('href');
-            const date = $(this).find('span').text();
-            const dateObject = new Date(date + " " + new Date().getFullYear())
+            const dateString = $(this).find('span').text();
+            const timeString = $(this).children('.date__col.Table__TD').find('a').text();
+
+            const dateObject = getDateObject(dateString, timeString)
+            let localTimeString = dateObject.toLocaleTimeString();
 
             let currentDate = new Date();
-
             if (dateObject > currentDate) {
                 fights.push({
-                    title: fight_name,
+                    title: fightName,
                     date: dateObject.toDateString(),
-                    url: url
+                    time: localTimeString,
+                    url: url,
+                    promotion: getPromotionName(fightName, url),
                 })
             }
         });
-
-        console.log(fights);
-
     }).catch(err => console.log(err));
 
 app.listen(PORT, () => console.log(`server running on port: ${PORT}`));
+
+app.get('/', (req, res) => {
+    res.json("Combat sports API");
+})
+
+app.get('/events', (req, res) => {
+    res.json(fights);
+})
+
+app.get('/events/:promotion', async (req, res) => {
+    const promotion = req.params.promotion;
+    const filteredFights = fights.filter(fight => fight.promotion === promotion);
+    res.json(filteredFights)
+})
+
+function getDateObject(dateString, timeString) {
+    let currentYear = new Date().getFullYear();
+    let dateTimeString = `${dateString} ${currentYear} ${timeString}`;
+    return new Date(dateTimeString);
+}
+
+function getPromotionName(fightName, url) {
+
+    if (!url) {
+        return checkLeaguePresence(fightName);
+    }
+
+    let truncatedString = url.replace(/\/mma\/fightcenter\/_\/id\/\d{9}\/league\//, '');
+
+    if (truncatedString.length === 0) {
+        return checkLeaguePresence(fightName);
+    }
+
+    return truncatedString.toUpperCase();
+}
+
+function checkLeaguePresence(fightTitle) {
+    // List of leagues to check
+    const leagues = ["UFC", "PFL", "ONE", "Invicta FC"];
+
+    // Iterate through each league and check if it exists in the string
+    for (let league of leagues) {
+        if (fightTitle.includes(league)) {
+            return league; // Return the matched league
+        }
+    }
+
+    // If no league was found, return null
+    return null;
+}
