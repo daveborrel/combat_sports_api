@@ -3,7 +3,7 @@ const cheerio = require('cheerio');
 const express = require('express');
 const app = express();
 
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 const URL = 'https://www.espn.com/mma/schedule';
 
 const fights = [];
@@ -45,7 +45,7 @@ app.get('/events', (req, res) => {
     res.json(fights);
 })
 
-app.get('/events/:promotion', async (req, res) => {
+app.get('/events/:promotion', (req, res) => {
     const promotion = req.params.promotion;
     const filteredFights = fights.filter(fight => fight.promotion === promotion);
     res.json(filteredFights)
@@ -73,16 +73,13 @@ function getPromotionName(fightName, url) {
 }
 
 function checkLeaguePresence(fightTitle) {
-    // List of leagues to check
     const leagues = ["UFC", "PFL", "ONE", "Invicta FC"];
 
-    // Iterate through each league and check if it exists in the string
     for (let league of leagues) {
         if (fightTitle.includes(league)) {
-            return league; // Return the matched league
+            return league;
         }
     }
 
-    // If no league was found, return null
     return null;
 }
