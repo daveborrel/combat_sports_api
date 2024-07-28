@@ -28,7 +28,7 @@ axios(URL)
                     title: fightName,
                     date: dateObject.toDateString(),
                     time: localTimeString,
-                    url: url,
+                    url: ensureHttps(url),
                     promotion: getPromotionName(fightName, url),
                 })
             }
@@ -82,4 +82,20 @@ function checkLeaguePresence(fightTitle) {
     }
 
     return null;
+}
+
+function ensureHttps(url) {
+    // Check if url is defined
+    if (!url) {
+        return '';
+    }
+
+    // Check if the URL starts with 'http://' or 'https://'
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        // Prepend the domain if it's a relative URL
+        return 'https://www.espn.com' + url; // Replace 'www.example.com' with the actual domain
+    }
+
+    // Replace 'http://' with 'https://'
+    return url.replace(/^http:\/\//i, 'https://');
 }
